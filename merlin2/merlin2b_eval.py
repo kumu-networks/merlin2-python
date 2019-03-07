@@ -54,3 +54,41 @@ class Merlin2bEval(Merlin2b):
     @property
     def serial_number(self):
         return self._io.serial_number
+
+    def set_downmixer_gain(self, gain, input=None):
+        """Set downmixer gain.
+
+        Args:
+            gain (float): gain setting in dB in range [8, 15]
+            input (int, optional): integer in range [0, 1]
+        """
+        if input is None:
+            for inp in self.downmixers:
+                inp.vga_gain = gain
+        elif isinstance(input, int) and input in (0, 1):
+            self.downmixers[input].vga_gain = gain
+        else:
+            raise TypeError('input: Expected integer in range [0, 1].')
+
+    def get_downmixer_gain(self, input=None):
+        """Get downmixer gain.
+
+        Args:
+            input (int, optional): integer in range [0, 1]
+
+        Returns:
+            tuple or float: tuple of floats or float gain in dB
+        """
+        if input is None:
+            return tuple(inp.vga_gain for inp in self.downmixers)
+        elif isinstance(input, int) and input in (0, 1):
+            return self.downmixers[input].vga_gain
+        raise TypeError('input: Expected integer in range [0, 1].')
+
+    def get_downmixer_gain_range(self):
+        """Downmixer gain range.
+
+        Returns:
+            dict: range in dB
+        """
+        return self.downmixers[0].vga_gain_range
