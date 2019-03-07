@@ -68,11 +68,12 @@ class Filter(Block):
 
     def get_weights(self):
         words = self.read(0x4, length=12)
-        weights = np.empty((12, 2), dtype=np.int16)
+        weights = np.empty((12, 3), dtype=np.int16)
         for index, word in enumerate(words):
             i = word & 0x1FF
             q = (word >> 9) & 0x1FF
             i = 0x100 - i if i & 0x100 else i
             q = 0x100 - q if q & 0x100 else q
-            weights[index, :] = i, q
+            disconnect = (word >> 28) & 0x1
+            weights[index, :] = i, q, disconnect
         return weights
