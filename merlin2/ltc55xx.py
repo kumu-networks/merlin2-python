@@ -103,6 +103,11 @@ class Ltc5594:
 
     @property
     def vga_gain_range(self):
+        """VGA gain range in dB.
+
+        Returns:
+            dict: range
+        """
         return {'start': 8., 'stop': 15., 'step': 1.}
 
     @property
