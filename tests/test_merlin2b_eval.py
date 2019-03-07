@@ -68,6 +68,36 @@ class Merlin2bEvalTestCase(unittest.TestCase):
                     self.assertIsInstance(rdata, float)
                     self.assertEqual(rdata, values[input])
 
+        # set/get_downmixer_gain
+        downmixer_gain_range = self._dut.get_downmixer_gain_range()
+        self.assertIsInstance(downmixer_gain_range, dict)
+        self.assertEqual(len(downmixer_gain_range), 3)
+        self.assertTrue(all(isinstance(downmixer_gain_range[k], float) \
+                            for k in ('start', 'stop', 'step')))
+        values = {}
+        for it in range(100):
+            # Write gain
+            for input in sample((None, 0, 1), k=3):
+                # If input is None, both VGA gains will be set
+                wdata = float(randint(0, 7) + 8)
+                self._dut.set_downmixer_gain(wdata, input=input)
+                if input is None:
+                    for index in range(2):
+                        values[index] = wdata
+                else:
+                    values[input] = wdata
+            # Read gain
+            for input in sample((None, 0, 1), k=3):
+                rdata = self._dut.get_downmixer_gain(input=input)
+                if input is None:
+                    self.assertIsInstance(rdata, tuple)
+                    self.assertTrue(all(isinstance(g, float) for g in rdata))
+                    self.assertTrue(len(rdata) == 2)
+                    self.assertEqual(rdata, tuple(values[i] for i in range(2)))
+                else:
+                    self.assertIsInstance(rdata, float)
+                    self.assertEqual(rdata, values[input])
+
         # set/get_weights
         for chain in (True, False):
             self._dut.setup(2, 2, 80e6, 1700e6, chain=chain)
@@ -174,6 +204,7 @@ class Merlin2bEvalTestCase(unittest.TestCase):
         attrs = {
             'vga_im3_trim': (tuple, lambda: tuple(randint(0, 3) for _ in range(2))),
             'vga_gain': (float, lambda: float(randint(0, 7) + 8)),
+            'vga_gain_range': (dict,),
             'lo_band': (int, lambda: randint(0, 1)),
             'lo_cf': (tuple, lambda: (randint(0, 31), randint(0, 31))),
             'chip_id': (int, lambda: randint(0, 3)),
@@ -190,7 +221,7 @@ class Merlin2bEvalTestCase(unittest.TestCase):
             'input_select': (int, lambda: randint(0, 1)),
             'atten': (float, lambda: float(randint(0, 31))),
         }
-        readonly = ('chip_id',)
+        readonly = ('chip_id', 'vga_gain_range',)
         self._test_attribute_read_write(self._dut.downmixers, attrs, readonly=readonly)
 
     def _test_attribute_read_write(self, objects, attrs, readonly=(), num_iter=100):
