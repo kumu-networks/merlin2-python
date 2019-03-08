@@ -37,6 +37,19 @@ class Merlin2bEval(Merlin2b):
         for dm in self.downmixers:
             dm.init()
 
+    def probe(self):
+        """Probe for board. This will test SPI communication to all ICs.
+
+        Returns:
+            bool: result
+        """
+        if not super().probe():
+            return False
+        for dm in self.downmixers:
+            if not dm.probe():
+                return False
+        return True
+
     def setup(self, num_input, num_output, bandwidth, lo_freq, chain=False):
         """Setup board.
 
