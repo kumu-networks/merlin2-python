@@ -90,11 +90,13 @@ class Merlin2b:
         self.write(0x2004, 0x1990E)
         sleep(10e-3)
         self.write(0x2004, 0x1990F)
+        # Disable LO in / out
+        self.write(0x200C, 0x7)
         for inp in range(2):
+            self.delays[inp].input_select = 1 if chain else 0
             self.delays[inp].bandwidth = bandwidth
-            self.delays[inp].enable = (inp < num_input,) * 3
+            self.delays[inp].enable = (inp < num_input or chain,) * 3
             self.delays[inp].rc_cal = 0x10
-            self.delays[inp].write(0x4, 0x1, 10, 0x400)
             self.delays[inp].gain = (-2, 0, 0, -2, -2, -2, -2, -2, -2, -2, -2)
             self.inputs[inp].dc_offset = (0., 0.)
             self.inputs[inp].vga_enable = inp < num_input
@@ -105,11 +107,11 @@ class Merlin2b:
             # note that input-output are flipped here.
             self.filters[out][inp].summer_enable = out < num_output
             self.filters[out][inp].tap_bypass = True
-            self.filters[inp][out].set_weights(np.zeros((12, 3), dtype=np.int16))
         for out in range(2):
             self.summers[out].enable = out < num_output
             self.outputs[out].dc_offset = (0., 0.)
             self.outputs[out].write(0x0, 0x0, 0, 0x3)
+        self.clear_weights()
         self.apply()
         self._chained = chain
 
@@ -256,7 +258,7 @@ class Merlin2b:
         num_taps = 23 if self._chained else 12
         num_filters = 2 if self._chained else 4
         if not isinstance(weights, np.ndarray) or weights.shape != (num_taps, num_filters):
-            raise TypeError('weights: Expected ndarray of shape ({}, {}) of type int16.'
+            raise TypeError('weights: Expected ndarray of shape ({}, {}).'
                             .format(num_taps, num_filters))
         fixed = []
         mapped = np.zeros((num_taps, num_filters), dtype=np.complex128)
@@ -291,7 +293,8 @@ class Merlin2b:
         """Get weights.
 
         Returns:
-            ndarray: complex weights
+            ndarray: ndarray of shape (12, 4) if not chained, else
+                     of shape (23, 2)
         """
         words = []
         for inp, out in product(range(2), repeat=2):
@@ -312,6 +315,21 @@ class Merlin2b:
             for col in range(4):
                 weights[:,col] = (words[col][:,0] / 255) + 1j * (words[col][:,1] / 255)
         return weights
+
+    def clear_weights(self, apply=True):
+        """Clear weights.
+
+        Args:
+            apply (bool, optional): apply weights to filter
+
+        Returns:
+            ndarray: ndarray of shape (12, 4) if not chained, else
+                     of shape (23, 2)
+        """
+        num_taps = 23 if self._chained else 12
+        num_filters = 2 if self._chained else 4
+        weights = np.zeros((num_taps, num_filters), dtype=np.complex128)
+        return self.set_weights(weights, apply=apply)
 
     def write(self, address, data, position=0, mask=2**32-1):
         if not isinstance(address, int) or not 0 <= address <= 0x7FFC \

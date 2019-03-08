@@ -118,6 +118,17 @@ class Merlin2bEvalTestCase(unittest.TestCase):
                 error = 20 * np.log10(np.max(np.abs(wdata - rdata)))
                 self.assertLess(error, -50) # This error ought to be less than 50 dB
 
+        # clear_weights
+        for chain in (True, False):
+            self._dut.setup(2, 2, 80e6, 1700e6, chain=chain)
+            mapped = self._dut.clear_weights()
+            num_taps = 23 if chain else 12
+            num_filters = 2 if chain else 4
+            self.assertIsInstance(mapped, np.ndarray)
+            self.assertTrue(mapped.shape == (num_taps, num_filters))
+            self.assertTrue(mapped.dtype == np.complex128)
+            self.assertTrue(np.count_nonzero(mapped) == 0)
+
     def test_filter(self):
         """Test Merlin2b filter."""
         attrs = {
