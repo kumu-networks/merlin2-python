@@ -1,1 +1,1 @@
-from .merlin2b_eval import Merlin2bEval
+from .merlin2b_board import Merlin2bEval, Merlin2bApp
