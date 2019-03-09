@@ -1,5 +1,6 @@
 from .io import Controller
 from .ltc55xx import Ltc5586, Ltc5594
+from .ads7866 import Ads7866
 from .merlin2b import Merlin2b
 from time import sleep
 
@@ -123,6 +124,9 @@ class Merlin2bApp(Merlin2bBoard):
             dm = Ltc5594(self._io.get_spi(cs=index, freq_hz=1e6, mode=0,
                                           miso_en_gpio=self._miso_en_gpio))
             self.downmixers.append(dm)
+        # Create ADC
+        self.adc = Ads7866(self._io.get_spi(cs=3, freq_hz=1e6, mode=0,
+                                            miso_en_gpio=self._miso_en_gpio))
         # Create merlin
         super().__init__(
             self._io.get_spi(cs=2, freq_hz=1e6, mode=0),
