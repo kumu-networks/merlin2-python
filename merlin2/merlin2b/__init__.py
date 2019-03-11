@@ -97,7 +97,7 @@ class Merlin2b:
             self.delays[inp].bandwidth = bandwidth
             self.delays[inp].enable = (inp < num_input or chain,) * 3
             self.delays[inp].rc_cal = 0x10
-            self.delays[inp].gain = (-2, 0, 0, -2, -2, -2, -2, -2, -2, -2, -2)
+            self.delays[inp].gains = (-2, 0, 0, -2, -2, -2, -2, -2, -2, -2, -2)
             self.inputs[inp].dc_offset = (0., 0.)
             self.inputs[inp].vga_enable = inp < num_input
             self.inputs[inp].vga_gain = 0.
@@ -164,11 +164,11 @@ class Merlin2b:
             raise TypeError('gains: Expected sequence of floats of length {}.'
                             .format(expected))
         if self._chained:
-            self.delays[0].gain = gains[:11]
-            self.delays[1].gain = gains[11:]
+            self.delays[0].gains = gains[:11]
+            self.delays[1].gains = gains[11:]
         else:
             for delays in self.delays:
-                delays.gain = gains
+                delays.gains = gains
 
     def get_gain_profile(self):
         """Get gain-delay profile.
@@ -177,9 +177,9 @@ class Merlin2b:
             tuple: tuple of float gains in dB
         """
         if self._chained:
-           return self.delays[0].gain + self.delays[1].gain
+           return self.delays[0].gains + self.delays[1].gains
         else:
-            return self.delays[0].gain
+            return self.delays[0].gains
 
     def set_input_dc_offset(self, i_offset, q_offset, input=None):
         """Set input DC offset.
