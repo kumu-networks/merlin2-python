@@ -112,7 +112,6 @@ class Merlin2b:
             self.outputs[out].dc_offset = (0., 0.)
             self.outputs[out].write(0x0, 0x0, 0, 0x3)
         self.clear_weights()
-        self.apply()
         self._chained = chain
 
     def set_vga_gain(self, gain, input=None):
