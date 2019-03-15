@@ -97,7 +97,7 @@ class Merlin2b:
             self.delays[inp].bandwidth = bandwidth
             self.delays[inp].enable = (inp < num_input or chain,) * 3
             self.delays[inp].rc_cal = 0x10
-            self.delays[inp].gains = (-2, 0, 0, -2, -2, -2, -2, -2, -2, -2, -2)
+            self.delays[inp].gains = (0, 0, 0, -2, 0, 0, 0, 0, 0, 0, 0)
             self.inputs[inp].dc_offset = (0., 0.)
             self.inputs[inp].vga_enable = inp < num_input
             self.inputs[inp].vga_gain = 0.
