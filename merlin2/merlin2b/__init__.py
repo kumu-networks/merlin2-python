@@ -253,6 +253,9 @@ class Merlin2b:
             weights (ndarray): ndarray of shape (12, 4) if not chained, else
                                of shape (23, 2)
             apply (bool, optional): apply weights to filter
+
+        Returns:
+            ndarray: mapped weights
         """
         num_taps = 23 if self._chained else 12
         num_filters = 2 if self._chained else 4

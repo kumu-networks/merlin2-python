@@ -76,6 +76,39 @@ class Merlin2bBoard(Merlin2b):
         """
         return self.downmixers[0].vga_gain_range
 
+    def set_downmixer_iq_compensation(self, gain, phase, input=None):
+        """Set downmixer IQ compensation.
+
+        Args:
+            gain (int): gain in range [0, 0x3F]
+            phase (int): phase in range [0, 0x1FF]
+            input (int, optional): integer in range [0, 1]
+        """
+        if input is None:
+            for downmixer in self.downmixers:
+                downmixer.iq_gain_trim = gain
+                downmixer.iq_phase_trim = phase
+        elif isinstance(input, int) and input in (0, 1):
+            downmixer = self.downmixers[input]
+            downmixer.iq_gain_trim = gain
+            downmixer.iq_phase_trim = phase
+        else:
+            raise TypeError('input: Expected integer in range [0, 1].')
+
+    def get_downmixer_iq_compensation(self, input):
+        """Get downmixer IQ compensation.
+
+        Args:
+            input (int): integer in range [0, 1]
+
+        Returns:
+            tuple: length 2 tuple of integers (gain, phase)
+        """
+        if not isinstance(input, int) or input not in (0, 1):
+            raise TypeError('input: Expected integer in range [0, 1].')
+        downmixer = self.downmixers[input]
+        return downmixer.iq_gain_trim, downmixer.iq_phase_trim
+
 
 class Merlin2bEval(Merlin2bBoard):
 

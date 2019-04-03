@@ -58,6 +58,41 @@ class Merlin2bTestCase:
                     self.assertIsInstance(rdata, float)
                     self.assertEqual(rdata, values[input])
 
+        # set/get_input_dc_offset
+        self._test_set_get_dc_offset(
+            self._dut.set_input_dc_offset,
+            self._dut.get_input_dc_offset,
+            lambda: tuple((randint(0, 127) / 127 * 2 - 1) for _ in range(2)),
+        )
+
+        # set/get_output_dc_offset
+        self._test_set_get_dc_offset(
+            self._dut.set_output_dc_offset,
+            self._dut.get_output_dc_offset,
+            lambda: tuple((randint(0, 127) / 127 * 2 - 1) for _ in range(2)),
+        )
+
+        # set/get_downmixer_iq_compensation
+        values = {}
+        for it in range(100):
+            # Write compensation
+            for input in sample((None, 0, 1), k=3):
+                # If input is None, both will be set
+                wdata = (randint(0, 63), randint(0, 0x1FF))
+                self._dut.set_downmixer_iq_compensation(*wdata, input=input)
+                if input is None:
+                    for input in range(2):
+                        values[input] = wdata
+                else:
+                    values[input] = wdata
+            # Read compensation
+            for input in sample((0, 1), k=2):
+                rdata = self._dut.get_downmixer_iq_compensation(input=input)
+                self.assertIsInstance(rdata, tuple)
+                self.assertTrue(len(rdata) == 2)
+                self.assertTrue(all(isinstance(g, int) for g in rdata))
+                self.assertEqual(rdata, values[input])
+
         # set/get_downmixer_gain
         downmixer_gain_range = self._dut.get_downmixer_gain_range()
         self.assertIsInstance(downmixer_gain_range, dict)
@@ -213,3 +248,24 @@ class Merlin2bTestCase:
                     wdata = values[index][key]
                     self.assertEqual(wdata, rdata, 'index = {}, attribute = {}, got = {},' \
                                      ' expected = {}'.format(index, key, rdata, wdata))
+
+    def _test_set_get_dc_offset(self, setter, getter, factory, num_iter=100):
+        values = {}
+        for it in range(num_iter):
+            # Write
+            for index in sample((None, 0, 1), k=3):
+                # If index is None, both will be set
+                wdata = factory()
+                setter(*wdata, index)
+                if index is None:
+                    for index in range(2):
+                        values[index] = wdata
+                else:
+                    values[index] = wdata
+            # Read
+            for index in sample((0, 1), k=2):
+                rdata = getter(index)
+                self.assertIsInstance(rdata, tuple)
+                self.assertTrue(all(isinstance(g, float) for g in rdata))
+                self.assertTrue(len(rdata) == 2)
+                self.assertEqual(rdata, values[index])
