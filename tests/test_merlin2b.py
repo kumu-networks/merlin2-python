@@ -72,22 +72,22 @@ class Merlin2bTestCase:
             lambda: tuple((randint(0, 127) / 127 * 2 - 1) for _ in range(2)),
         )
 
-        # set/get_downmixer_iq_compensation
+        # set/get_downmixer_iq_correction
         values = {}
         for it in range(100):
-            # Write compensation
+            # Write correction
             for input in sample((None, 0, 1), k=3):
                 # If input is None, both will be set
                 wdata = (randint(0, 63), randint(0, 0x1FF))
-                self._dut.set_downmixer_iq_compensation(*wdata, input=input)
+                self._dut.set_downmixer_iq_correction(*wdata, input=input)
                 if input is None:
                     for input in range(2):
                         values[input] = wdata
                 else:
                     values[input] = wdata
-            # Read compensation
+            # Read correction
             for input in sample((0, 1), k=2):
-                rdata = self._dut.get_downmixer_iq_compensation(input=input)
+                rdata = self._dut.get_downmixer_iq_correction(input=input)
                 self.assertIsInstance(rdata, tuple)
                 self.assertTrue(len(rdata) == 2)
                 self.assertTrue(all(isinstance(g, int) for g in rdata))

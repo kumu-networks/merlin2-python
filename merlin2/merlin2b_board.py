@@ -76,8 +76,8 @@ class Merlin2bBoard(Merlin2b):
         """
         return self.downmixers[0].vga_gain_range
 
-    def set_downmixer_iq_compensation(self, gain, phase, input=None):
-        """Set downmixer IQ compensation.
+    def set_downmixer_iq_correction(self, gain, phase, input=None):
+        """Set downmixer IQ correction.
 
         Args:
             gain (int): gain in range [0, 0x3F]
@@ -95,8 +95,8 @@ class Merlin2bBoard(Merlin2b):
         else:
             raise TypeError('input: Expected integer in range [0, 1].')
 
-    def get_downmixer_iq_compensation(self, input):
-        """Get downmixer IQ compensation.
+    def get_downmixer_iq_correction(self, input):
+        """Get downmixer IQ correction.
 
         Args:
             input (int): integer in range [0, 1]
@@ -108,6 +108,37 @@ class Merlin2bBoard(Merlin2b):
             raise TypeError('input: Expected integer in range [0, 1].')
         downmixer = self.downmixers[input]
         return downmixer.iq_gain_trim, downmixer.iq_phase_trim
+
+    def set_downmixer_im2_correction(self, i, q, input=None):
+        """Set downmixer IM2 correction.
+
+        Args:
+            i (int): i value in range [0, 255]
+            q (int): q value in range [0, 255]
+            input (int, optional): integer in range [0, 1]
+        """
+        if input is None:
+            for downmixer in self.downmixers:
+                downmixer.im2_trim = (i, q)
+        elif isinstance(input, int) and input in (0, 1):
+            downmixer = self.downmixers[input]
+            downmixer.im2_trim = (i, q)
+        else:
+            raise TypeError('input: Expected integer in range [0, 1].')
+
+    def get_downmixer_im2_correction(self, input):
+        """Get downmixer IM2 correction.
+
+        Args:
+            input (int): integer in range [0, 1]
+
+        Returns:
+            tuple: length 2 tuple of integers (i, q)
+        """
+        if not isinstance(input, int) or input not in (0, 1):
+            raise TypeError('input: Expected integer in range [0, 1].')
+        downmixer = self.downmixers[input]
+        return downmixer.im2_trim
 
 
 class Merlin2bEval(Merlin2bBoard):
