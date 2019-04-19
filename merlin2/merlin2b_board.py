@@ -36,6 +36,11 @@ class Merlin2bBoard(Merlin2b):
 
     @property
     def serial_number(self):
+        """Serial number.
+
+        Returns:
+            str: serial number
+        """
         return self._io.serial_number
 
     def set_downmixer_gain(self, gain, input=None):
@@ -165,6 +170,7 @@ class Merlin2bEval(Merlin2bBoard):
         )
 
     def init(self):
+        """Initialize board."""
         self._miso_en_gpio.set(False)
         self._en_5v_gpio.set(True)
         self._en_3p3v_gpio.set(True)
@@ -199,6 +205,7 @@ class Merlin2bApp(Merlin2bBoard):
         )
 
     def init(self):
+        """Initialize board."""
         self._miso_en_gpio.set(False)
         sleep(1e-3)
         super().init()
