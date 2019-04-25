@@ -145,6 +145,51 @@ class Merlin2bBoard(Merlin2b):
         downmixer = self.downmixers[input]
         return downmixer.im2_trim
 
+    def set_downmixer_dc_offset(self, i_offset, q_offset, input=None):
+        """Set downmixer DC offset.
+
+        Args:
+            i_offset (float): I DC offset in range [-1, +1]
+            q_offset (float): Q DC offset in range [-1, +1]
+            input (int, optional): integer in range [0, 1]
+
+        Returns:
+            tuple: length 2 tuple of floats (i, q) in range [-1, +1]
+        """
+        if not isinstance(i_offset, float) or abs(i_offset) > 1.:
+            raise ValueError('i_offset: Expected float in range [-1, +1].')
+        if not isinstance(q_offset, float) or abs(q_offset) > 1.:
+            raise ValueError('q_offset: Expected float in range [-1, +1].')
+        i_word = min(max(int(round((i_offset + 1.) * 128.)), 0), 255)
+        q_word = min(max(int(round((q_offset + 1.) * 128.)), 0), 255)
+        if input is None:
+            for input in range(2):
+                self.downmixers[input].dc_offset = (i_word, q_word)
+        elif isinstance(input, int) and input in (0, 1):
+            self.downmixers[input].dc_offset = (i_word, q_word)
+        else:
+            raise TypeError('input: Expected integer in range [0, 1].')
+        i_word, q_word = self.downmixers[input].dc_offset
+        i_actual = (i_word / 128.) - 1.
+        q_actual = (q_word / 128.) - 1.
+        return i_actual, q_actual
+
+    def get_downmixer_dc_offset(self, input):
+        """Get downmixer DC offset.
+
+        Args:
+            input (int): integer in range [0, 1]
+
+        Returns:
+            tuple: length 2 tuple of floats (i, q) in range [-1, +1]
+        """
+        if not isinstance(input, int) or input not in (0, 1):
+            raise TypeError('input: Expected integer in range [0, 1].')
+        i_word, q_word = self.downmixers[input].dc_offset
+        i_offset = (i_word / 128.) - 1.
+        q_offset = (q_word / 128.) - 1.
+        return i_offset, q_offset
+
 
 class Merlin2bEval(Merlin2bBoard):
 
@@ -167,6 +212,7 @@ class Merlin2bEval(Merlin2bBoard):
             self._io.get_spi(cs=2, freq_hz=1e6, mode=0),
             self._io.get_gpio(8, direction='output', active_low=True),
             self._io.get_gpio(9, direction='output', active_low=False),
+            use_vga=True,
         )
 
     def init(self):
@@ -202,6 +248,7 @@ class Merlin2bApp(Merlin2bBoard):
             self._io.get_spi(cs=2, freq_hz=1e6, mode=0),
             self._io.get_gpio(8, direction='output', active_low=True),
             self._io.get_gpio(9, direction='output', active_low=False),
+            use_vga=False,
         )
 
     def init(self):

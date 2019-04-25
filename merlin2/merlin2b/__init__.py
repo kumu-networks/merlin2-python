@@ -13,11 +13,12 @@ from .summer import Summer
 
 class Merlin2b:
 
-    def __init__(self, interface, reset_gpio, apls_gpio):
+    def __init__(self, interface, reset_gpio, apls_gpio, use_vga=True):
         self._iface = interface
         self._resetn_gpio = reset_gpio
         self._apls_gpio = apls_gpio
         self._chained = False
+        self._use_vga = use_vga
         self.inputs = (
             Input(self, 0x3004),
             Input(self, 0x3014),
@@ -99,7 +100,7 @@ class Merlin2b:
             self.delays[inp].rc_cal = 0x0E
             self.delays[inp].gains = (0, 0, 0, -2, 0, 0, 0, 0, 0, 0, 0)
             self.inputs[inp].dc_offset = (0., 0.)
-            self.inputs[inp].vga_enable = inp < num_input
+            self.inputs[inp].vga_enable = (inp < num_input) and self._use_vga
             self.inputs[inp].vga_gain = 0.
         for inp, out in product(range(2), repeat=2):
             self.filters[inp][out].enable = True
