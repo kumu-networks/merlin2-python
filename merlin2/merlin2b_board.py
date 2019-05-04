@@ -191,7 +191,7 @@ class Merlin2bBoard(Merlin2b):
         return i_offset, q_offset
 
 
-class Merlin2bEval(Merlin2bBoard):
+class Merlin2bTest(Merlin2bBoard):
 
     def __init__(self, serial_number=None):
         if serial_number is not None and not isinstance(serial_number, str):
@@ -227,7 +227,7 @@ class Merlin2bEval(Merlin2bBoard):
             dm.init()
 
 
-class Merlin2bApp(Merlin2bBoard):
+class Merlin2bEval(Merlin2bBoard):
 
     def __init__(self, serial_number=None):
         if serial_number is not None and not isinstance(serial_number, str):

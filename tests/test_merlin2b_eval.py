@@ -14,6 +14,11 @@ class Merlin2bEvalTestCase(unittest.TestCase, Merlin2bTestCase):
         self._dut.init()
         del self._dut
 
+    def test_adc(self):
+        value = self._dut.adc.read()
+        self.assertIsInstance(value, float)
+        self.assertTrue(0 <= value < 1)
+
     def test_downmixer(self):
         """Test LTC5586 downmixer."""
         for dm in self._dut.downmixers:
@@ -46,8 +51,6 @@ class Merlin2bEvalTestCase(unittest.TestCase, Merlin2bTestCase):
             'lo_lf': (int, lambda: randint(0, 3)),
             'lo_vcm': (int, lambda: randint(0, 7)),
             'iq_phase_trim': (int, lambda: randint(0, 0x1FF)),
-            'input_select': (int, lambda: randint(0, 1)),
-            'atten': (float, lambda: float(randint(0, 31))),
         }
         readonly = ('chip_id', 'vga_gain_range',)
         self._test_attribute_read_write(self._dut.downmixers, attrs, readonly=readonly)
