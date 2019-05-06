@@ -106,10 +106,10 @@ class Merlin2b:
             self.filters[inp][out].enable = True
             # i0o1 and i1o0 summer enable and tap_bypass control lines swapped,
             # note that input-output are flipped here.
-            self.filters[out][inp].summer_enable = out < num_output
+            self.filters[out][inp].summer_enable = True
             self.filters[out][inp].tap_bypass = True
         for out in range(2):
-            self.summers[out].enable = out < num_output
+            self.summers[out].enable = True
             self.outputs[out].dc_offset = (0., 0.)
             self.outputs[out].write(0x0, 0x0, 0, 0x3)
         self.clear_weights()
