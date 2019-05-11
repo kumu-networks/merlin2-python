@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='merlin2',
-    version='0.1',
+    version='1.0.0',
     packages=find_packages(),
     description='Driver for Merlin2 chip, test and evaluation board.',
     author='Christian Hahn',
