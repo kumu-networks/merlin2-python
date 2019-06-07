@@ -182,7 +182,7 @@ class Merlin2bTestCase:
             'tap_bypass': (bool, lambda: bool(randint(0, 1))),
         }
         # Flatten filters
-        filters = [item for sublist in self._dut.filters for item in sublist]
+        filters = [item for sublist in self._dut.ic.filters for item in sublist]
         self._test_attribute_read_write(filters, attrs)
         values = {}
         for it in range(100):
@@ -206,11 +206,11 @@ class Merlin2bTestCase:
         attrs = {
             'enable': (bool, lambda: bool(randint(0, 1))),
         }
-        self._test_attribute_read_write(self._dut.summers, attrs)
+        self._test_attribute_read_write(self._dut.ic.summers, attrs)
 
     def test_input(self):
         """Test Merlin2b Input."""
-        VGA_GAIN_TABLE = self._dut.inputs[0].vga_gain_table
+        VGA_GAIN_TABLE = self._dut.ic.inputs[0].vga_gain_table
         attrs = {
             'vga_enable': (bool, lambda: bool(randint(0, 1))),
             'vga_gain': (float, partial(choice, VGA_GAIN_TABLE)),
@@ -218,14 +218,14 @@ class Merlin2bTestCase:
             'pos_gain_trim': (tuple, lambda: tuple(randint(0, 15) for _ in range(2))),
             'neg_gain_trim': (tuple, lambda: tuple(randint(0, 15) for _ in range(2))),
         }
-        self._test_attribute_read_write(self._dut.inputs, attrs)
+        self._test_attribute_read_write(self._dut.ic.inputs, attrs)
 
     def test_output(self):
         """Test Merlin2b Output."""
         attrs = {
             'dc_offset': (tuple, lambda: tuple((randint(0, 127) / 127 * 2 - 1) for _ in range(2))),
         }
-        self._test_attribute_read_write(self._dut.outputs, attrs)
+        self._test_attribute_read_write(self._dut.ic.outputs, attrs)
 
     def test_delaygroup(self):
         """Test Merlin2b DelayGroup."""
@@ -240,7 +240,7 @@ class Merlin2bTestCase:
                                      tuple(choice(high_gains) for _ in range(9))),
 
         }
-        self._test_attribute_read_write(self._dut.delays, attrs)
+        self._test_attribute_read_write(self._dut.ic.delays, attrs)
 
     def _test_attribute_read_write(self, objects, attrs, readonly=(), num_iter=100):
         values = [{} for _ in range(len(objects))]
