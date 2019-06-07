@@ -25,7 +25,25 @@ from .merlin2b import Merlin2b
 from time import sleep
 
 
-class Merlin2bBoard(Merlin2b):
+class Merlin2bBoard:
+
+    def init(self):
+        """Initialize board."""
+        try:
+            self.ic.init()
+        except Exception as e:
+            raise RuntimeError('Failed to initialize IC.') from e
+        for index, dm in enumerate(self.downmixers):
+            try:
+                dm.init()
+            except Exception as e:
+                raise RuntimeError('Failed to initialize downmixer {}.'.format(index)) from e
+
+    def reset(self):
+        """Reset board."""
+        self.ic.reset()
+        for dm in self.downmixers:
+            dm.reset()
 
     def probe(self):
         """Probe for board. This will test SPI communication to all ICs.
@@ -33,7 +51,7 @@ class Merlin2bBoard(Merlin2b):
         Returns:
             bool: result
         """
-        if not super().probe():
+        if not self.ic.probe():
             return False
         for dm in self.downmixers:
             if not dm.probe():
@@ -50,9 +68,139 @@ class Merlin2bBoard(Merlin2b):
             lo_freq (float, str): LO frequency in Hz or 'default'
             chain (bool, optional): chain multiple filters, default False.
         """
-        super().setup(num_input, num_output, bandwidth, chain=chain)
+        self.ic.setup(num_input, num_output, bandwidth, chain=chain)
         for dm in self.downmixers:
             dm.setup(lo_freq)
+
+    def apply(self):
+        """Apply weights by toggling APLS pin."""
+        self.ic.apply()
+
+    def set_vga_gain(self, *args, **kwargs):
+        """Set VGA gain.
+
+        Args:
+            gain (float): gain setting in range [-2.68, 6.92]
+            input (int, optional): integer in range [0, 1]
+        """
+        return self.ic.set_vga_gain(*args, **kwargs)
+
+    def get_vga_gain(self, *args, **kwargs):
+        """Get VGA gain.
+
+        Args:
+            input (int, optional): integer in range [0, 1]
+
+        Returns:
+            tuple or float: tuple of floats or float gain in dB
+        """
+        return self.ic.get_vga_gain(*args, **kwargs)
+
+    def get_vga_gain_table(self, *args, **kwargs):
+        """VGA gain table.
+
+        Returns:
+            tuple: tuple of floats, gain in dB
+        """
+        return self.ic.get_vga_gain_table(*args, **kwargs)
+
+    def set_gain_profile(self, *args, **kwargs):
+        """Set gain-delay profile.
+
+        Args:
+            gains (sequence): sequence of gains in dB of length 11 or 22
+        """
+        return self.ic.set_gain_profile(*args, **kwargs)
+
+    def get_gain_profile(self, *args, **kwargs):
+        """Get gain-delay profile.
+
+        Returns:
+            tuple: tuple of float gains in dB
+        """
+        return self.ic.get_gain_profile(*args, **kwargs)
+
+    def set_input_dc_offset(self, *args, **kwargs):
+        """Set input DC offset.
+
+        Args:
+            i_offset (float): I DC offset in range [-1, +1]
+            q_offset (float): Q DC offset in range [-1, +1]
+            input (int, optional): integer in range [0, 1]
+
+        Returns:
+            tuple: length 2 tuple of floats (i, q) in range [-1, +1]
+        """
+        return self.ic.set_input_dc_offset(*args, **kwargs)
+
+    def get_input_dc_offset(self, *args, **kwargs):
+        """Get input DC offset.
+
+        Args:
+            input (int): integer in range [0, 1]
+
+        Returns:
+            tuple: length 2 tuple of floats (i, q) in range [-1, +1]
+        """
+        return self.ic.get_input_dc_offset(*args, **kwargs)
+
+    def set_output_dc_offset(self, *args, **kwargs):
+        """Set output DC offset.
+
+        Args:
+            i_offset (float): I DC offset in range [-1, +1]
+            q_offset (float): Q DC offset in range [-1, +1]
+            output (int, optional): integer in range [0, 1]
+
+        Returns:
+            tuple: length 2 tuple of floats (i, q) in range [-1, +1]
+        """
+        return self.ic.set_output_dc_offset(*args, **kwargs)
+
+    def get_output_dc_offset(self, *args, **kwargs):
+        """Get output DC offset.
+
+        Args:
+            output (int): integer in range [0, 1]
+
+        Returns:
+            tuple: length 2 tuple of floats (i, q) in range [-1, +1]
+        """
+        return self.ic.get_output_dc_offset(*args, **kwargs)
+
+    def set_weights(self, *args, **kwargs):
+        """Set weights.
+
+        Args:
+            weights (ndarray): ndarray of shape (12, 4) if not chained, else
+                               of shape (23, 2)
+            apply (bool, optional): apply weights to filter
+
+        Returns:
+            ndarray: mapped weights
+        """
+        return self.ic.set_weights(*args, **kwargs)
+
+    def get_weights(self):
+        """Get weights.
+
+        Returns:
+            ndarray: ndarray of shape (12, 4) if not chained, else
+                     of shape (23, 2)
+        """
+        return self.ic.get_weights()
+
+    def clear_weights(self, *args, **kwargs):
+        """Clear weights.
+
+        Args:
+            apply (bool, optional): apply weights to filter
+
+        Returns:
+            ndarray: ndarray of shape (12, 4) if not chained, else
+                     of shape (23, 2)
+        """
+        return self.ic.clear_weights(*args, **kwargs)
 
     @property
     def serial_number(self):
@@ -228,7 +376,7 @@ class Merlin2bTest(Merlin2bBoard):
                                           miso_en_gpio=self._miso_en_gpio))
             self.downmixers.append(dm)
         # Create merlin
-        super().__init__(
+        self.ic = Merlin2b(
             self._io.get_spi(cs=2, freq_hz=1e6, mode=0),
             self._io.get_gpio(8, direction='output', active_low=True),
             self._io.get_gpio(9, direction='output', active_low=False),
@@ -243,8 +391,6 @@ class Merlin2bTest(Merlin2bBoard):
         self._en_2p5v_gpio.set(True)
         sleep(10e-3)
         super().init()
-        for dm in self.downmixers:
-            dm.init()
 
 
 class Merlin2bEval(Merlin2bBoard):
@@ -264,7 +410,7 @@ class Merlin2bEval(Merlin2bBoard):
         self.adc = Ads7866(self._io.get_spi(cs=3, freq_hz=1e6, mode=0,
                                             miso_en_gpio=self._miso_en_gpio))
         # Create merlin
-        super().__init__(
+        self.ic = Merlin2b(
             self._io.get_spi(cs=2, freq_hz=1e6, mode=0),
             self._io.get_gpio(8, direction='output', active_low=True),
             self._io.get_gpio(9, direction='output', active_low=False),
@@ -276,5 +422,3 @@ class Merlin2bEval(Merlin2bBoard):
         self._miso_en_gpio.set(False)
         sleep(1e-3)
         super().init()
-        for dm in self.downmixers:
-            dm.init()
