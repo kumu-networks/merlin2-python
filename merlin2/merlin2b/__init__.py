@@ -287,8 +287,13 @@ class Merlin2b:
         mapped = np.zeros((num_taps, num_filters), dtype=np.complex128)
         for col in range(num_filters):
             data = np.empty((num_taps, 2), dtype=np.int16)
-            data[:, 0] = np.round(np.real(weights[:, col]) * 255)
-            data[:, 1] = np.round(np.imag(weights[:, col]) * 255)
+            real = np.round(np.real(weights[:, col]) * 255)
+            imag = np.round(np.imag(weights[:, col]) * 255)
+            if (np.abs(real) > 255).any() or (np.abs(imag) > 255).any():
+                raise ValueError('weights: real and/or imaginary components out-of-range,'
+                                 ' must be in [-1, +1].')
+            data[:, 0] = real
+            data[:, 1] = imag
             fixed.append(data)
             mapped[:, col] = (data[:, 0] / 255) + 1j * (data[:, 1] / 255)
         words = [np.zeros((12, 3), dtype=np.int16) for _ in range(4)]
