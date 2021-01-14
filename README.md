@@ -2,7 +2,7 @@
 
 ## Abstract
 
-merlin2-python is a pure python driver to control Merlin2-based analog FIR filter boards.
+merlin2-python is a pure Python driver to control Merlin2-based analog FIR filter boards.
 
 ## Dependencies / Installation
 
