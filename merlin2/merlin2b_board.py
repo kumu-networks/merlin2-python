@@ -361,7 +361,7 @@ class Merlin2bBoard:
 
 class Merlin2bTest(Merlin2bBoard):
 
-    def __init__(self, serial_number=None):
+    def __init__(self, serial_number=None, chip_revision=2):
         if serial_number is not None and not isinstance(serial_number, str):
             raise TypeError('serial_number: Expected str.')
         self._io = Controller(serial_number=serial_number)
@@ -380,7 +380,7 @@ class Merlin2bTest(Merlin2bBoard):
             self._io.get_spi(cs=2, freq_hz=1e6, mode=0),
             self._io.get_gpio(8, direction='output', active_low=True),
             self._io.get_gpio(9, direction='output', active_low=False),
-            use_vga=True,
+            use_vga=True, revision=chip_revision,
         )
 
     def init(self):
@@ -395,7 +395,7 @@ class Merlin2bTest(Merlin2bBoard):
 
 class Merlin2bEval(Merlin2bBoard):
 
-    def __init__(self, serial_number=None):
+    def __init__(self, serial_number=None, chip_revision=2):
         if serial_number is not None and not isinstance(serial_number, str):
             raise TypeError('serial_number: Expected str.')
         self._io = Controller(serial_number=serial_number)
@@ -414,7 +414,7 @@ class Merlin2bEval(Merlin2bBoard):
             self._io.get_spi(cs=2, freq_hz=1e6, mode=0),
             self._io.get_gpio(8, direction='output', active_low=True),
             self._io.get_gpio(9, direction='output', active_low=False),
-            use_vga=False,
+            use_vga=False, revision=chip_revision,
         )
 
     def init(self):

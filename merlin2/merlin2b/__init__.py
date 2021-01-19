@@ -33,12 +33,13 @@ from .summer import Summer
 
 class Merlin2b:
 
-    def __init__(self, interface, reset_gpio, apls_gpio, use_vga=True):
+    def __init__(self, interface, reset_gpio, apls_gpio, use_vga=True, revision=2):
         self._iface = interface
         self._resetn_gpio = reset_gpio
         self._apls_gpio = apls_gpio
         self._chained = False
         self._use_vga = use_vga
+        self._revision = revision
         self.inputs = (
             Input(self, 0x3004),
             Input(self, 0x3014),
@@ -47,18 +48,35 @@ class Merlin2b:
             DelayGroup(self, 0x4),
             DelayGroup(self, 0x1004),
         )
-        self.filters = (
-            (Filter(self, 0x38), Filter(self, 0x6C)),
-            (Filter(self, 0x1038), Filter(self, 0x106C)),
-        )
+
+        if revision == 1:
+            self.filters = (
+                (Filter(self, 0x38), Filter(self, 0x6C)),
+                (Filter(self, 0x1038), Filter(self, 0x106C)),
+            )
+            self.outputs = (
+                Output(self, 0x3024),
+                Output(self, 0x3040),
+            )
+        elif revision == 2:
+            # Flip (i0o0, i1o0) and (i0o1, i1o1) filters for Merlin2b2
+            self.filters = (
+                (Filter(self, 0x6C), Filter(self, 0x38)),
+                (Filter(self, 0x106C), Filter(self, 0x1038)),
+            )
+            # Flip outputs 0 and 1 for Merlin2b2
+            self.outputs = (
+                Output(self, 0x3040),
+                Output(self, 0x3024),
+            )
+        else:
+            raise ValueError('Invalid revision, must be (1, 2).')
+
         self.summers = (
             Summer(self, 0xA0),
             Summer(self, 0x10A0),
         )
-        self.outputs = (
-            Output(self, 0x3024),
-            Output(self, 0x3040),
-        )
+
 
     def init(self):
         """Initialize device."""
@@ -307,10 +325,11 @@ class Merlin2b:
         else:
             for col in range(4):
                 words[col][:,:2] = fixed[col]
-        # Handle tap # 11 flip between i0o0 and i0o1
-        tmp = words[0][11,:].copy()
-        words[0][11,:] = words[1][11,:]
-        words[1][11,:] = tmp
+        if self._revision == 1:
+            # Handle tap # 11 flip between i0o0 and i0o1
+            tmp = words[0][11,:].copy()
+            words[0][11,:] = words[1][11,:]
+            words[1][11,:] = tmp
         for inp, out in product(range(2), repeat=2):
             self.filters[inp][out].set_weights(words[inp * 2 + out])
         if apply:
@@ -327,10 +346,11 @@ class Merlin2b:
         words = []
         for inp, out in product(range(2), repeat=2):
             words.append(self.filters[inp][out].get_weights())
-        # Handle tap # 11 flip between i0o0 and i0o1
-        tmp = words[0][11,:].copy()
-        words[0][11,:] = words[1][11,:]
-        words[1][11,:] = tmp
+        if self._revision == 1:
+            # Handle tap # 11 flip between i0o0 and i0o1
+            tmp = words[0][11,:].copy()
+            words[0][11,:] = words[1][11,:]
+            words[1][11,:] = tmp
         num_taps = 23 if self._chained else 12
         num_filters = 2 if self._chained else 4
         weights = np.empty((num_taps, num_filters), dtype=np.complex128)
