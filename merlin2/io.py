@@ -23,8 +23,9 @@ from pyftdi.spi import SpiController
 
 class Controller:
 
-    def __init__(self, serial_number=None):
-        self._dev = SpiController()
+    def __init__(self, cs_count=None, serial_number=None):
+        kwargs = {} if cs_count is None else {'cs_count': cs_count}
+        self._dev = SpiController(**kwargs)
         url = 'ftdi://ftdi:232h/1' if serial_number is None else \
               'ftdi://::{}/1'.format(serial_number)
         self._dev.configure(url)
@@ -67,9 +68,9 @@ class Gpio:
                                ' of an input.')
         if not isinstance(value, bool):
             raise TypeError('value: Expected bool.')
-        read = self._gpio_port.read(with_output=True)
+        read = self._gpio_port.read(with_output=True) & self._gpio_port.direction
         if value ^ self._active_low:
-            self._gpio_port.write((read & ~self._mask) | self._mask)
+            self._gpio_port.write(read | self._mask)
         else:
             self._gpio_port.write(read & ~self._mask)
 

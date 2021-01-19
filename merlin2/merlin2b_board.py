@@ -364,7 +364,7 @@ class Merlin2bTest(Merlin2bBoard):
     def __init__(self, serial_number=None, chip_revision=2):
         if serial_number is not None and not isinstance(serial_number, str):
             raise TypeError('serial_number: Expected str.')
-        self._io = Controller(serial_number=serial_number)
+        self._io = Controller(cs_count=3, serial_number=serial_number)
         self._en_5v_gpio = self._io.get_gpio(11, direction='output', active_low=False)
         self._en_3p3v_gpio = self._io.get_gpio(12, direction='output', active_low=False)
         self._en_2p5v_gpio = self._io.get_gpio(7, direction='output', active_low=False)
@@ -398,7 +398,7 @@ class Merlin2bEval(Merlin2bBoard):
     def __init__(self, serial_number=None, chip_revision=2):
         if serial_number is not None and not isinstance(serial_number, str):
             raise TypeError('serial_number: Expected str.')
-        self._io = Controller(serial_number=serial_number)
+        self._io = Controller(cs_count=4, serial_number=serial_number)
         self._miso_en_gpio = self._io.get_gpio(10, direction='output', active_low=True)
         # Create downmixers
         self.downmixers = []
