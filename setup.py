@@ -25,6 +25,7 @@ setup(
     version='1.1.0',
     packages=find_packages(),
     description='Driver for Merlin2 chip, test and evaluation board.',
+    url='https://kumunetworks.com/',
     author='Christian Hahn',
     author_email='christian@kumunetworks.com',
     license='',
