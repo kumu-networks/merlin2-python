@@ -18,4 +18,6 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVE
 POSSIBILITY OF SUCH DAMAGE.
 """
 
+__version__ = '1.1.0'
+
 from .merlin2b_board import Merlin2bTest, Merlin2bEval
