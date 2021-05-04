@@ -2,23 +2,22 @@
 
 ## Abstract
 
-merlin2-python is a pure Python driver to control Merlin2-based analog FIR filter boards.
+merlin2-python is a Python driver to control Merlin2-based analog FIR filter boards.
 
 ## Dependencies / Installation
 
 merlin2-python has the following dependencies:
-* python3 (tested with 3.5-3.7, but any 3.x should work)
-* pyftdi
+* python3 (tested with 3.5-3.9)
 * numpy
-* libusb
+* pyftdi
+* libusb  (required by pyftdi)
 
 [Pyftdi's documentation](https://eblot.github.io/pyftdi/installation.html) provides comprehensive
-instructions for how to install libusb and pyftdi on any operating system. Follow the instructions
-for installing libusb, and then run `pip3 install pyftdi`.
+instructions for how to install pyftdi and libusb on any operating system.
 
 For example, to install `pyftdi` and `numpy` in Ubuntu using `pip`:
 ``` text
-sudo pip3 install numpy pyftdi
+pip3 install pyftdi numpy
 ```
 
 ## Examples
